@@ -5,9 +5,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Experiencia AR en iOS y Android</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
-    <script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
+        import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.136.0/examples/jsm/loaders/STLLoader.js';
+        import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.136.0/examples/jsm/exporters/GLTFExporter.js';
+
+        window.processSTL = function () {
+            const fileInput = document.getElementById('stl-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Por favor, selecciona un archivo STL.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                console.log("Archivo STL cargado correctamente.");
+
+                const loader = new STLLoader();
+                const geometry = loader.parse(event.target.result);
+                const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const mesh = new THREE.Mesh(geometry, material);
+
+                // Obtener dimensiones del modelo STL
+                const boundingBox = new THREE.Box3().setFromObject(mesh);
+                const size = boundingBox.getSize(new THREE.Vector3());
+
+                console.log("Dimensiones originales:", size);
+
+                let scaleFactor = 1;
+
+                if (size.y > 100) {
+                    scaleFactor = 0.001;  // Convertir de mm a metros
+                } else if (size.y > 10) {
+                    scaleFactor = 0.01; // Convertir de cm a metros
+                }
+
+                mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                console.log(`Escalado con factor: ${scaleFactor}`);
+
+                exportGLB(mesh);
+            };
+
+            reader.readAsArrayBuffer(file);
+        };
+
+        // Función para exportar a GLB y permitir la descarga
+        function exportGLB(model) {
+            console.log("Iniciando exportación a GLB...");
+            const exporter = new GLTFExporter();
+
+            exporter.parse(model, function (gltf) {
+                console.log("GLB exportado correctamente.");
+
+                const blob = new Blob([gltf], { type: "model/gltf-binary" });
+                const url = URL.createObjectURL(blob);
+
+                console.log("URL del archivo GLB generado:", url);
+
+                // Crear un enlace de descarga
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'modelo_convertido.glb';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                alert("Modelo GLB exportado y descargado correctamente.");
+            }, { binary: true });
+        }
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,74 +120,6 @@
     </div>
 
     <div id="ar-container"></div>
-
-    <script>
-        function processSTL() {
-            const fileInput = document.getElementById('stl-file');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                alert("Por favor, selecciona un archivo STL.");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                console.log("Archivo STL cargado correctamente.");
-
-                const loader = new THREE.STLLoader();
-                const geometry = loader.parse(event.target.result);
-                const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-                const mesh = new THREE.Mesh(geometry, material);
-
-                // Obtener dimensiones del modelo STL
-                const boundingBox = new THREE.Box3().setFromObject(mesh);
-                const size = boundingBox.getSize(new THREE.Vector3());
-
-                console.log("Dimensiones originales:", size);
-
-                let scaleFactor = 1;
-
-                if (size.y > 100) {
-                    scaleFactor = 0.001;  // Convertir de mm a metros
-                } else if (size.y > 10) {
-                    scaleFactor = 0.01; // Convertir de cm a metros
-                }
-
-                mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                console.log(`Escalado con factor: ${scaleFactor}`);
-
-                exportGLB(mesh);
-            };
-
-            reader.readAsArrayBuffer(file);
-        }
-
-        // Función para exportar a GLB y permitir la descarga
-        function exportGLB(model) {
-            console.log("Iniciando exportación a GLB...");
-            const exporter = new THREE.GLTFExporter();
-
-            exporter.parse(model, function (gltf) {
-                console.log("GLB exportado correctamente.");
-
-                const blob = new Blob([gltf], { type: "model/gltf-binary" });
-                const url = URL.createObjectURL(blob);
-
-                console.log("URL del archivo GLB generado:", url);
-
-                // Crear un enlace de descarga
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = 'modelo_convertido.glb';
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-
-                alert("Modelo GLB exportado y descargado correctamente.");
-            }, { binary: true });
-        }
-    </script>
 </body>
 
 </html>
