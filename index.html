@@ -65,14 +65,18 @@
 
             const reader = new FileReader();
             reader.onload = function(event) {
+                console.log("Archivo STL cargado correctamente.");
+
                 const loader = new THREE.STLLoader();
                 const geometry = loader.parse(event.target.result);
                 const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
                 const mesh = new THREE.Mesh(geometry, material);
 
-                // Obtener las dimensiones del modelo STL
+                // Obtener dimensiones del modelo STL
                 const boundingBox = new THREE.Box3().setFromObject(mesh);
                 const size = boundingBox.getSize(new THREE.Vector3());
+
+                console.log("Dimensiones originales:", size);
 
                 let scaleFactor = 1;
 
@@ -83,29 +87,36 @@
                 }
 
                 mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                alert(`Modelo STL escalado a tamaño real con factor ${scaleFactor}.`);
+                console.log(`Escalado con factor: ${scaleFactor}`);
 
                 exportGLB(mesh);
             };
+
             reader.readAsArrayBuffer(file);
         }
 
         // Función para exportar a GLB y permitir la descarga
         function exportGLB(model) {
+            console.log("Iniciando exportación a GLB...");
             const exporter = new THREE.GLTFExporter();
+
             exporter.parse(model, function (gltf) {
+                console.log("GLB exportado correctamente.");
+
                 const blob = new Blob([gltf], { type: "model/gltf-binary" });
-                const convertedGLB = URL.createObjectURL(blob);
+                const url = URL.createObjectURL(blob);
 
-                // Crear un enlace de descarga para el archivo GLB
+                console.log("URL del archivo GLB generado:", url);
+
+                // Crear un enlace de descarga
                 const downloadLink = document.createElement('a');
-                downloadLink.href = convertedGLB;
-                downloadLink.download = 'model.glb';
-
-                // Hacer clic automáticamente para iniciar la descarga
+                downloadLink.href = url;
+                downloadLink.download = 'modelo_convertido.glb';
+                document.body.appendChild(downloadLink);
                 downloadLink.click();
+                document.body.removeChild(downloadLink);
 
-                alert(`Modelo GLB exportado y descargado correctamente.`);
+                alert("Modelo GLB exportado y descargado correctamente.");
             }, { binary: true });
         }
     </script>
