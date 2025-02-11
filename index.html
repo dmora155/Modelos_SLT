@@ -48,9 +48,8 @@
     <p>Selecciona un objeto para verlo en AR con la escala corregida.</p>
 
     <div class="object-selection">
-        <button onclick="openAR('coin')">Moneda</button>
-        <button onclick="openAR('mushroom')">Hongo</button>
-        <button onclick="openAR('star')">Estrella</button>
+        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Speaker-box.stl')">Cargar Speaker Box</button>
+        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Wooden chair.stl')">Cargar Wooden Chair</button>
     </div>
 
     <div id="ar-container"></div>
@@ -68,80 +67,64 @@
         }
 
         const os = getOS();
-        alert("Sistema detectado: " + os);
 
-        const objects = {
-            coin: {
-                glb: "https://dmora155.github.io/PruebaDePagina/lampara.glb",
-                usdz: "https://dmora155.github.io/PruebaDePagina/3dpea.com_lampara.usdz"
-            },
-            mushroom: {
-                glb: "https://dmora155.github.io/PruebaDePagina/ImageToStl.com_origami-pip_table-lamp_v1_shade-small.glb",
-                usdz: "https://dmora155.github.io/PruebaDePagina/Super_Mario_Bros_Mushroom.usdz"
-            },
-            star: {
-                glb: "https://firebasestorage.googleapis.com/v0/b/vitrinea-4433b.appspot.com/o/vitrineaar%2F3D_Obj[…]?alt=media&token=c51a29e1-9b0d-48d6-af92-a6efba6a40ac",
-                usdz: "https://dmora155.github.io/PruebaDePagina/Super_Mario_Bros_Star.usdz"
-            }
-        };
-
-        function openAR(objectKey) {
-            if (os === "iOS") {
-                openInQuickLook(objects[objectKey].usdz);
-            } else if (os === "Android") {
-                openInSceneViewer(objects[objectKey].glb, objectKey);
-            } else {
-                alert("Tu dispositivo no es compatible con AR.");
-            }
-        }
-
-        function openInSceneViewer(modelUrl, objectKey) {
-            alert("Abriendo modelo original en Scene Viewer...");
-            window.location.href = `https://arvr.google.com/scene-viewer/1.0?file=${modelUrl}&mode=ar_preferred`;
-
-            detectAndConvertToMm(modelUrl, objectKey);
-        }
-
-        function detectAndConvertToMm(modelUrl, objectKey) {
+        // Cargar archivo STL desde URL y convertir a GLB
+        function loadSTL(url) {
             const loader = new THREE.STLLoader();
 
-            loader.load(modelUrl, function (geometry) {
-                const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-                const mesh = new THREE.Mesh(geometry, material);
-                const boundingBox = new THREE.Box3().setFromObject(mesh);
-                const size = boundingBox.getSize(new THREE.Vector3());
+            // Descargar el archivo STL desde la URL
+            fetch(url)
+                .then(response => response.arrayBuffer())
+                .then(data => {
+                    const geometry = loader.parse(data);
+                    const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                    const mesh = new THREE.Mesh(geometry, material);
 
-                let scaleFactor = 1;
+                    // Obtener las dimensiones del modelo STL
+                    const boundingBox = new THREE.Box3().setFromObject(mesh);
+                    const size = boundingBox.getSize(new THREE.Vector3());
 
-                if (size.y > 100) {
-                    scaleFactor = 0.001;  // Convertir de mm a metros
-                } else if (size.y > 10) {
-                    scaleFactor = 0.01; // Convertir de cm a metros
-                }
+                    let scaleFactor = 1;
 
-                mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                alert(`Modelo ${objectKey} escalado a tamaño real con factor ${scaleFactor}.`);
+                    if (size.y > 100) {
+                        scaleFactor = 0.001;  // Convertir de mm a metros
+                    } else if (size.y > 10) {
+                        scaleFactor = 0.01; // Convertir de cm a metros
+                    }
 
-                exportGLB(mesh, objectKey);
-            });
+                    mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                    alert(`Modelo STL escalado a tamaño real con factor ${scaleFactor}.`);
+
+                    exportGLB(mesh);
+                })
+                .catch(error => alert('Error al cargar el archivo STL: ' + error));
         }
 
-        function exportGLB(model, objectKey) {
-            alert(`Exportando modelo ${objectKey} escalado...`);
+        // Función para exportar a GLB
+        function exportGLB(model) {
             const exporter = new THREE.GLTFExporter();
-
             exporter.parse(model, function (gltf) {
                 const blob = new Blob([gltf], { type: "model/gltf-binary" });
                 const convertedGLB = URL.createObjectURL(blob);
-                alert(`Modelo ${objectKey} corregido y exportado en GLB.`);
+                alert(`Modelo GLB exportado correctamente.`);
 
-                openInSceneViewer(convertedGLB, objectKey);
+                // Usar el modelo GLB en Scene Viewer (Android) o Quick Look (iOS)
+                if (os === "Android") {
+                    openInSceneViewer(convertedGLB);
+                } else if (os === "iOS") {
+                    openInQuickLook(convertedGLB);
+                }
             }, { binary: true });
         }
 
-        function openInQuickLook(usdzUrl) {
-            alert("Abriendo en Quick Look...");
-            window.location.href = `${usdzUrl}#allowsContentScaling=0&callToAction=Ver en AR`;
+        // Abrir modelo en Scene Viewer (Android)
+        function openInSceneViewer(modelUrl) {
+            window.location.href = `https://arvr.google.com/scene-viewer/1.0?file=${modelUrl}&mode=ar_preferred`;
+        }
+
+        // Abrir modelo en Quick Look (iOS)
+        function openInQuickLook(modelUrl) {
+            window.location.href = `${modelUrl}#allowsContentScaling=0&callToAction=Ver en AR`;
         }
     </script>
 </body>
