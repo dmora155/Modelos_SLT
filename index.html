@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversión STL a GLB</title>
+
+    <!-- Cargar Three.js desde un CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Cargar STLLoader y GLTFExporter desde Three.js examples -->
+    <script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
 </head>
 <body>
     <h1>Conversión de STL a GLB</h1>
@@ -11,15 +18,11 @@
 
     <div>
         <input type="file" id="stl-file" accept=".stl">
-        <button id="convert-btn">Convertir a GLB</button>
+        <button onclick="processSTL()">Convertir a GLB</button>
     </div>
 
-    <script type="module">
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
-        import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.136.0/examples/jsm/loaders/STLLoader.js';
-        import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.136.0/examples/jsm/exporters/GLTFExporter.js';
-
-        document.getElementById('convert-btn').addEventListener('click', () => {
+    <script>
+        function processSTL() {
             const fileInput = document.getElementById('stl-file');
             const file = fileInput.files[0];
 
@@ -32,7 +35,14 @@
             reader.onload = function(event) {
                 console.log("Archivo STL cargado correctamente.");
 
-                const loader = new STLLoader();
+                // Comprobamos que STLLoader está disponible
+                if (typeof THREE.STLLoader === "undefined") {
+                    console.error("STLLoader no está definido correctamente.");
+                    alert("Error al cargar STLLoader. Revisa la consola.");
+                    return;
+                }
+
+                const loader = new THREE.STLLoader();
                 const geometry = loader.parse(event.target.result);
                 const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
                 const mesh = new THREE.Mesh(geometry, material);
@@ -57,11 +67,11 @@
             };
 
             reader.readAsArrayBuffer(file);
-        });
+        }
 
         function exportGLB(model) {
             console.log("Iniciando exportación a GLB...");
-            const exporter = new GLTFExporter();
+            const exporter = new THREE.GLTFExporter();
 
             exporter.parse(model, function (gltf) {
                 console.log("GLB exportado correctamente.");
