@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Experiencia AR en iOS y Android</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
     <script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
     <style>
@@ -70,7 +69,10 @@
 
         // Cargar archivo STL desde URL y convertir a GLB
         function loadSTL(url) {
+            console.log("Cargando archivo STL desde: ", url); // Debug log
+
             const loader = new THREE.STLLoader();
+            console.log("STLLoader cargado: ", loader); // Verificar si el loader está disponible
 
             // Descargar el archivo STL desde la URL
             fetch(url)
