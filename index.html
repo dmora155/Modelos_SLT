@@ -45,11 +45,11 @@
 
 <body>
     <h1>Experiencia AR en iOS y Android</h1>
-    <p>Selecciona un objeto para verlo en AR con la escala corregida.</p>
+    <p>Selecciona un objeto para descargar el modelo GLB con la escala corregida.</p>
 
     <div class="object-selection">
-        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Speaker-box.stl')">Cargar Speaker Box</button>
-        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Wooden%20chair.stl')">Cargar Wooden Chair</button>
+        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Speaker-box.stl')">Descargar Speaker Box GLB</button>
+        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Wooden%20chair.stl')">Descargar Wooden Chair GLB</button>
     </div>
 
     <div id="ar-container"></div>
@@ -100,31 +100,21 @@
                 .catch(error => alert('Error al cargar el archivo STL: ' + error));
         }
 
-        // Función para exportar a GLB
+        // Función para exportar a GLB y permitir la descarga
         function exportGLB(model) {
             const exporter = new THREE.GLTFExporter();
             exporter.parse(model, function (gltf) {
                 const blob = new Blob([gltf], { type: "model/gltf-binary" });
                 const convertedGLB = URL.createObjectURL(blob);
-                alert(`Modelo GLB exportado correctamente.`);
 
-                // Usar el modelo GLB en Scene Viewer (Android) o Quick Look (iOS)
-                if (os === "Android") {
-                    openInSceneViewer(convertedGLB);
-                } else if (os === "iOS") {
-                    openInQuickLook(convertedGLB);
-                }
+                // Crear un enlace de descarga para el archivo GLB
+                const downloadLink = document.createElement('a');
+                downloadLink.href = convertedGLB;
+                downloadLink.download = 'model.glb';
+                downloadLink.click(); // Simula el clic para iniciar la descarga
+
+                alert(`Modelo GLB exportado y descargado correctamente.`);
             }, { binary: true });
-        }
-
-        // Abrir modelo en Scene Viewer (Android)
-        function openInSceneViewer(modelUrl) {
-            window.location.href = `https://arvr.google.com/scene-viewer/1.0?file=${modelUrl}&mode=ar_preferred`;
-        }
-
-        // Abrir modelo en Quick Look (iOS)
-        function openInQuickLook(modelUrl) {
-            window.location.href = `${modelUrl}#allowsContentScaling=0&callToAction=Ver en AR`;
         }
     </script>
 </body>
