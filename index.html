@@ -1,67 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiencia AR en iOS y Android</title>
-
-    <!-- Cargar Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <!-- Cargar STLLoader manualmente -->
-    <script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
-
-    <!-- Cargar GLTFExporter manualmente -->
-    <script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-            background-color: #f8f8f8;
-        }
-
-        button {
-            padding: 10px 15px;
-            font-size: 16px;
-            background-color: #ffcc00;
-            color: black;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-        }
-
-        button:hover {
-            background-color: #ffbb00;
-        }
-
-        #ar-container {
-            margin-top: 20px;
-        }
-
-        .object-selection {
-            margin: 20px 0;
-        }
-    </style>
+    <title>Conversión STL a GLB</title>
 </head>
-
 <body>
-    <h1>Experiencia AR en iOS y Android</h1>
-    <p>Selecciona un archivo STL para convertirlo a GLB y descargarlo.</p>
+    <h1>Conversión de STL a GLB</h1>
+    <p>Selecciona un archivo STL y conviértelo a GLB</p>
 
-    <div class="object-selection">
-        <input type="file" id="stl-file" accept=".stl" />
-        <button onclick="processSTL()">Convertir a GLB</button>
+    <div>
+        <input type="file" id="stl-file" accept=".stl">
+        <button id="convert-btn">Convertir a GLB</button>
     </div>
 
-    <div id="ar-container"></div>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
+        import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.136.0/examples/jsm/loaders/STLLoader.js';
+        import { GLTFExporter } from 'https://cdn.jsdelivr.net/npm/three@0.136.0/examples/jsm/exporters/GLTFExporter.js';
 
-    <script>
-        function processSTL() {
+        document.getElementById('convert-btn').addEventListener('click', () => {
             const fileInput = document.getElementById('stl-file');
             const file = fileInput.files[0];
 
@@ -71,17 +29,10 @@
             }
 
             const reader = new FileReader();
-            reader.onload = function (event) {
+            reader.onload = function(event) {
                 console.log("Archivo STL cargado correctamente.");
 
-                // Comprobar que STLLoader está definido correctamente
-                if (typeof THREE.STLLoader === "undefined") {
-                    console.error("STLLoader no está definido correctamente.");
-                    alert("Error al cargar STLLoader. Revisa la consola.");
-                    return;
-                }
-
-                const loader = new THREE.STLLoader();
+                const loader = new STLLoader();
                 const geometry = loader.parse(event.target.result);
                 const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
                 const mesh = new THREE.Mesh(geometry, material);
@@ -93,7 +44,6 @@
                 console.log("Dimensiones originales:", size);
 
                 let scaleFactor = 1;
-
                 if (size.y > 100) {
                     scaleFactor = 0.001;  // Convertir de mm a metros
                 } else if (size.y > 10) {
@@ -107,12 +57,11 @@
             };
 
             reader.readAsArrayBuffer(file);
-        }
+        });
 
-        // Función para exportar a GLB y permitir la descarga
         function exportGLB(model) {
             console.log("Iniciando exportación a GLB...");
-            const exporter = new THREE.GLTFExporter();
+            const exporter = new GLTFExporter();
 
             exporter.parse(model, function (gltf) {
                 console.log("GLB exportado correctamente.");
@@ -133,11 +82,6 @@
                 alert("Modelo GLB exportado y descargado correctamente.");
             }, { binary: true });
         }
-
-        // Asegurar que processSTL sea accesible desde el botón
-        window.processSTL = processSTL;
     </script>
-
 </body>
-
 </html>
