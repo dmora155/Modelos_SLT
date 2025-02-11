@@ -44,61 +44,50 @@
 
 <body>
     <h1>Experiencia AR en iOS y Android</h1>
-    <p>Selecciona un objeto para descargar el modelo GLB con la escala corregida.</p>
+    <p>Selecciona un archivo STL para convertirlo a GLB y descargarlo.</p>
 
     <div class="object-selection">
-        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Speaker-box.stl')">Descargar Speaker Box GLB</button>
-        <button onclick="loadSTL('https://dmora155.github.io/PruebaDePagina/Wooden%20chair.stl')">Descargar Wooden Chair GLB</button>
+        <input type="file" id="stl-file" accept=".stl" />
+        <button onclick="processSTL()">Convertir a GLB</button>
     </div>
 
     <div id="ar-container"></div>
 
     <script>
-        function getOS() {
-            const userAgent = navigator.userAgent || navigator.vendor;
-            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                return "iOS";
-            } else if (/android/i.test(userAgent)) {
-                return "Android";
-            } else {
-                return "No compatible";
+        function processSTL() {
+            const fileInput = document.getElementById('stl-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Por favor, selecciona un archivo STL.");
+                return;
             }
-        }
 
-        const os = getOS();
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const loader = new THREE.STLLoader();
+                const geometry = loader.parse(event.target.result);
+                const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const mesh = new THREE.Mesh(geometry, material);
 
-        // Cargar archivo STL desde URL y convertir a GLB
-        function loadSTL(url) {
-            console.log("Cargando archivo STL desde: ", url); // Debug log
+                // Obtener las dimensiones del modelo STL
+                const boundingBox = new THREE.Box3().setFromObject(mesh);
+                const size = boundingBox.getSize(new THREE.Vector3());
 
-            const loader = new THREE.STLLoader();  // Asegúrate de que esta línea esté correctamente colocada
+                let scaleFactor = 1;
 
-            // Descargar el archivo STL desde la URL
-            fetch(url)
-                .then(response => response.arrayBuffer())
-                .then(data => {
-                    const geometry = loader.parse(data);
-                    const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-                    const mesh = new THREE.Mesh(geometry, material);
+                if (size.y > 100) {
+                    scaleFactor = 0.001;  // Convertir de mm a metros
+                } else if (size.y > 10) {
+                    scaleFactor = 0.01; // Convertir de cm a metros
+                }
 
-                    // Obtener las dimensiones del modelo STL
-                    const boundingBox = new THREE.Box3().setFromObject(mesh);
-                    const size = boundingBox.getSize(new THREE.Vector3());
+                mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                alert(`Modelo STL escalado a tamaño real con factor ${scaleFactor}.`);
 
-                    let scaleFactor = 1;
-
-                    if (size.y > 100) {
-                        scaleFactor = 0.001;  // Convertir de mm a metros
-                    } else if (size.y > 10) {
-                        scaleFactor = 0.01; // Convertir de cm a metros
-                    }
-
-                    mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                    alert(`Modelo STL escalado a tamaño real con factor ${scaleFactor}.`);
-
-                    exportGLB(mesh);
-                })
-                .catch(error => alert('Error al cargar el archivo STL: ' + error));
+                exportGLB(mesh);
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         // Función para exportar a GLB y permitir la descarga
