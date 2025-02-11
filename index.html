@@ -101,7 +101,9 @@
                 const downloadLink = document.createElement('a');
                 downloadLink.href = convertedGLB;
                 downloadLink.download = 'model.glb';
-                downloadLink.click(); // Simula el clic para iniciar la descarga
+
+                // Hacer clic automáticamente para iniciar la descarga
+                downloadLink.click();
 
                 alert(`Modelo GLB exportado y descargado correctamente.`);
             }, { binary: true });
