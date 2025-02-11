@@ -17,14 +17,6 @@
             background-color: #f8f8f8;
         }
 
-        h1 {
-            color: #333;
-        }
-
-        p {
-            color: #555;
-        }
-
         button {
             padding: 10px 15px;
             font-size: 16px;
@@ -34,7 +26,6 @@
             border-radius: 5px;
             cursor: pointer;
             margin: 10px;
-            transition: background-color 0.3s ease;
         }
 
         button:hover {
@@ -47,19 +38,6 @@
 
         .object-selection {
             margin: 20px 0;
-        }
-
-        .notification {
-            display: none;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-
-        .error {
-            background-color: #f44336;
         }
     </style>
 </head>
@@ -75,11 +53,7 @@
 
     <div id="ar-container"></div>
 
-    <!-- Notificación para mensajes -->
-    <div id="notification" class="notification"></div>
-
     <script>
-        // Detectar el sistema operativo
         function getOS() {
             const userAgent = navigator.userAgent || navigator.vendor;
             if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
@@ -93,35 +67,15 @@
 
         const os = getOS();
 
-        // Mostrar notificación
-        function showNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = isError ? 'notification error' : 'notification';
-            notification.style.display = 'block';
-
-            // Ocultar la notificación después de 3 segundos
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-
         // Cargar archivo STL desde URL y convertir a GLB
         function loadSTL(url) {
-            console.log("Cargando archivo STL desde: ", url);
+            console.log("Cargando archivo STL desde: ", url); // Debug log
 
-            const loader = new THREE.STLLoader(); // Corregido: STLLoader (con dos "L")
+            const loader = new THREE.STLLoader();  // Asegúrate de que esta línea esté correctamente colocada
 
-            // Mostrar un mensaje de carga
-            showNotification("Cargando modelo STL...");
-
+            // Descargar el archivo STL desde la URL
             fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error al cargar el archivo STL: ' + response.statusText);
-                    }
-                    return response.arrayBuffer();
-                })
+                .then(response => response.arrayBuffer())
                 .then(data => {
                     const geometry = loader.parse(data);
                     const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
@@ -140,14 +94,11 @@
                     }
 
                     mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                    showNotification(`Modelo STL escalado a tamaño real con factor ${scaleFactor}.`);
+                    alert(`Modelo STL escalado a tamaño real con factor ${scaleFactor}.`);
 
                     exportGLB(mesh);
                 })
-                .catch(error => {
-                    console.error('Error al cargar el archivo STL: ', error);
-                    showNotification('Error al cargar el archivo STL: ' + error.message, true);
-                });
+                .catch(error => alert('Error al cargar el archivo STL: ' + error));
         }
 
         // Función para exportar a GLB y permitir la descarga
@@ -161,11 +112,9 @@
                 const downloadLink = document.createElement('a');
                 downloadLink.href = convertedGLB;
                 downloadLink.download = 'model.glb';
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
+                downloadLink.click(); // Simula el clic para iniciar la descarga
 
-                showNotification("Modelo GLB exportado y descargado correctamente.");
+                alert(`Modelo GLB exportado y descargado correctamente.`);
             }, { binary: true });
         }
     </script>
