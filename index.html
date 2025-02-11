@@ -71,8 +71,7 @@
         function loadSTL(url) {
             console.log("Cargando archivo STL desde: ", url); // Debug log
 
-            const loader = new THREE.STLLoader();
-            console.log("STLLoader cargado: ", loader); // Verificar si el loader está disponible
+            const loader = new THREE.STLLoader();  // Asegúrate de que esta línea esté correctamente colocada
 
             // Descargar el archivo STL desde la URL
             fetch(url)
