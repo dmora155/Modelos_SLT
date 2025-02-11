@@ -6,9 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Experiencia AR en iOS y Android</title>
 
-    <!-- Cargar Three.js y STLLoader correctamente -->
+    <!-- Cargar Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Cargar STLLoader manualmente -->
     <script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
+
+    <!-- Cargar GLTFExporter manualmente -->
     <script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
 
     <style>
@@ -69,6 +73,13 @@
             const reader = new FileReader();
             reader.onload = function (event) {
                 console.log("Archivo STL cargado correctamente.");
+
+                // Comprobar que STLLoader está definido correctamente
+                if (typeof THREE.STLLoader === "undefined") {
+                    console.error("STLLoader no está definido correctamente.");
+                    alert("Error al cargar STLLoader. Revisa la consola.");
+                    return;
+                }
 
                 const loader = new THREE.STLLoader();
                 const geometry = loader.parse(event.target.result);
