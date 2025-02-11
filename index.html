@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conversión STL a GLB</title>
 
-    <!-- Cargar Three.js desde un CDN -->
+    <!-- Cargar Three.js desde un CDN confiable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <!-- Cargar STLLoader y GLTFExporter desde Three.js examples -->
-    <script src="https://threejs.org/examples/js/loaders/STLLoader.js"></script>
-    <script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
+    <!-- Cargar STLLoader y GLTFExporter correctamente -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/exporters/GLTFExporter.js"></script>
 </head>
 <body>
     <h1>Conversión de STL a GLB</h1>
@@ -35,10 +35,10 @@
             reader.onload = function(event) {
                 console.log("Archivo STL cargado correctamente.");
 
-                // Comprobamos que STLLoader está disponible
-                if (typeof THREE.STLLoader === "undefined") {
-                    console.error("STLLoader no está definido correctamente.");
-                    alert("Error al cargar STLLoader. Revisa la consola.");
+                // Comprobar que STLLoader se ha cargado correctamente
+                if (!THREE.STLLoader) {
+                    console.error("STLLoader no se ha definido correctamente.");
+                    alert("Error: STLLoader no cargado.");
                     return;
                 }
 
