@@ -110,7 +110,7 @@
         function loadSTL(url) {
             console.log("Cargando archivo STL desde: ", url);
 
-            const loader = new THREE.STLLoader();
+            const loader = new THREE.STLLoader(); // Corregido: STLLoader (con dos "L")
 
             // Mostrar un mensaje de carga
             showNotification("Cargando modelo STL...");
