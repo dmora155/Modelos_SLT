@@ -63,6 +63,9 @@
                 mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
                 console.log(`Escalado con factor: ${scaleFactor}`);
 
+                // Corrección de ejes (si es necesario)
+                mesh.rotation.set(-Math.PI / 2, 0, 0); // Corregir si Three.js altera los ejes
+
                 exportGLB(mesh);
             };
 
